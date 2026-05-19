@@ -1,14 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
-const articleRoutes = require('./routes/articleRoutes');
+import express from 'express';
+import cors from 'cors';
+import authRoutes from './routes/authRoutes.js';
+import articleRoutes from './routes/articleRoutes.js';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Daftarkan route buatan Jesika
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 

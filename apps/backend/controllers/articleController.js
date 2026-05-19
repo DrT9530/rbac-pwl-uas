@@ -1,8 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 // 1. GET ALL ARTICLES (Bisa diakses USER, EDITOR, ADMIN)
-const getAllArticles = async (req, res) => {
+export const getAllArticles = async (req, res) => {
   try {
     const articles = await prisma.article.findMany({
       include: { author: { select: { username: true } } }
@@ -14,7 +15,7 @@ const getAllArticles = async (req, res) => {
 };
 
 // 2. CREATE ARTICLE (Butuh permission: CREATE_ARTICLE)
-const createArticle = async (req, res) => {
+export const createArticle = async (req, res) => {
   try {
     const { title, content } = req.body;
     const authorId = req.user.id; // Diambil dari token JWT hasil middleware
@@ -30,7 +31,7 @@ const createArticle = async (req, res) => {
 };
 
 // 3. UPDATE ARTICLE (Butuh permission: UPDATE_ARTICLE)
-const updateArticle = async (req, res) => {
+export const updateArticle = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content } = req.body;
@@ -47,7 +48,7 @@ const updateArticle = async (req, res) => {
 };
 
 // 4. DELETE ARTICLE (Butuh permission: DELETE_ARTICLE)
-const deleteArticle = async (req, res) => {
+export const deleteArticle = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -60,5 +61,3 @@ const deleteArticle = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-module.exports = { getAllArticles, createArticle, updateArticle, deleteArticle };

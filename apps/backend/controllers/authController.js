@@ -1,11 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'rahasia_negara_tetangga';
 
-const register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { username, email, password, roleName } = req.body;
 
@@ -35,7 +35,7 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -79,5 +79,3 @@ const login = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-module.exports = { register, login };
