@@ -5,28 +5,27 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'rahasia_negara_tetangga';
 
-// 1. REGISTER USER
 const register = async (req, res) => {
   try {
-    const { username, email, password, roleName } = req.body; // roleName: 'ADMIN', 'EDITOR', atau 'USER'
+    const { username, email, password, roleName } = req.body;
 
-    // Cek apakah email sudah terdaftar
     const userExists = await prisma.user.findUnique({ where: { email } });
     if (userExists) return res.status(400).json({ message: 'Email sudah terdaftar' });
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Cari role di database berdasarkan nama role yang dikirim
     const role = await prisma.role.findUnique({ where: { name: roleName || 'USER' } });
 
-    // Simpan user ke database
+    if (!role) return res.status(404).json({ message: 'Role tidak valid' });
+
+    // PERBAIKAN: Gunakan relasi Many-to-Many (tabel pivot UserRole)
     const newUser = await prisma.user.create({
       data: {
         username,
         email,
         password: hashedPassword,
-        roleId: role.id // Menghubungkan user dengan role-nya
+        roles: {
+          create: [{ roleId: role.id }]
+        }
       }
     });
 
@@ -36,19 +35,20 @@ const register = async (req, res) => {
   }
 };
 
-// 2. LOGIN USER (Generate JWT Token)
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Cari user beserta rolenya dan permission-nya
+    // PERBAIKAN: Query relasi Many-to-Many
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        role: {
+        roles: {
           include: {
-            rolePermissions: {
-              include: { permission: true }
+            role: {
+              include: {
+                permissions: { include: { permission: true } }
+              }
             }
           }
         }
@@ -57,20 +57,15 @@ const login = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: 'User tidak ditemukan' });
 
-    // Validasi password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) return res.status(401).json({ message: 'Password salah' });
 
-    // Ambil semua nama permission untuk dimasukkan ke dalam token (berguna untuk middleware Atha)
-    const permissions = user.role.rolePermissions.map(rp => rp.permission.name);
+    // PERBAIKAN: Ekstrak role dan permission dari array UserRole
+    const userRole = user.roles[0]?.role; 
+    const permissions = userRole?.permissions.map(rp => rp.permission.name) || [];
 
-    // Generate JWT Token (Bawa id, role, dan permissions)
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        role: user.role.name,
-        permissions: permissions 
-      },
+      { id: user.id, role: userRole?.name, permissions },
       JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -78,11 +73,7 @@ const login = async (req, res) => {
     res.status(200).json({
       message: 'Login berhasil!',
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role.name
-      }
+      user: { id: user.id, username: user.username, role: userRole?.name }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
