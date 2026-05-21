@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  globalRoles    UserGlobalRole[]
+  createdCourses Course[]         @relation("CourseCreator")
+  courseMemberships CourseMember[]
+  createdAssignments Assignment[] @relation("AssignmentCreator")
+  submissions    Submission[]
+
+  @@map("users")
+}
+
+model GlobalRole {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+
+  users UserGlobalRole[]
+
+  @@map("global_roles")
+}
+
+model UserGlobalRole {
+  userId       Int @map("user_id")
+  globalRoleId Int @map("global_role_id")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  globalRole GlobalRole @relation(fields: [globalRoleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, globalRoleId])
+  @@map("user_global_roles")
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  createdBy   Int      @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  creator     User           @relation("CourseCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  members     CourseMember[]
+  assignments Assignment[]
+
+  @@map("courses")
+}
+
+model CourseMember {
+  id       Int    @id @default(autoincrement())
+  userId   Int    @map("user_id")
+  courseId  Int    @map("course_id")
+  role     String // 'dosen' | 'mahasiswa' | 'asdos'
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("course_members")
+}
+
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  courseId     Int       @map("course_id")
+  title       String
+  description String
+  dueDate     DateTime? @map("due_date")
+  createdBy   Int       @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  creator     User         @relation("AssignmentCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@map("assignments")
+}
+
+model Submission {
+  id           Int       @id @default(autoincrement())
+  assignmentId Int       @map("assignment_id")
+  studentId    Int       @map("student_id")
+  content      String?
+  fileUrl      String?   @map("file_url")
+  grade        Int?
+  feedback     String?
+  submittedAt  DateTime  @default(now()) @map("submitted_at")
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId])
+  @@map("submissions")
+}

@@ -1,0 +1,26 @@
+{
+  "name": "lms-rbac-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "db:push": "bunx prisma db push",
+    "db:seed": "bunx prisma db seed",
+    "db:studio": "bunx prisma studio",
+    "generate": "bunx prisma generate"
+  },
+  "dependencies": {
+    "elysia": "^1.2.0",
+    "@elysiajs/cors": "^1.2.0",
+    "@elysiajs/jwt": "^1.2.0",
+    "@prisma/client": "^6.0.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "prisma": "^6.0.0",
+    "typescript": "^5.0.0"
+  },
+  "prisma": {
+    "seed": "bun run prisma/seed.ts"
+  }
+}
