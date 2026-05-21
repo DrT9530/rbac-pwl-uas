@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { jwt } from "@elysiajs/jwt";
 import { prisma } from "../lib/prisma";
 
 /**
@@ -6,6 +7,12 @@ import { prisma } from "../lib/prisma";
  * Extracts Bearer token, verifies JWT, and attaches user data to context.
  */
 export const authMiddleware = new Elysia({ name: "auth-middleware" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET || "lms-rbac-edlink-secret-key-2024",
+    })
+  )
   .derive({ as: "scoped" }, async ({ headers, jwt, set }): Promise<{
     userId: number;
     userEmail: string;
