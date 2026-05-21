@@ -1,9 +1,16 @@
 import { Elysia, t } from "elysia";
+import { jwt } from "@elysiajs/jwt";
 import { prisma } from "../lib/prisma";
 import { comparePassword } from "../utils/password";
 import { authMiddleware, getUserGlobalRoles } from "../middleware/auth.middleware";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
+  .use(
+    jwt({
+      name: "jwt",
+      secret: process.env.JWT_SECRET || "lms-rbac-edlink-secret-key-2024",
+    })
+  )
   // POST /auth/login
   .post(
     "/login",
