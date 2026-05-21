@@ -76,3 +76,4 @@ console.log(`🚀 LMS RBAC Backend is running at http://localhost:${PORT}`);
 console.log(`📝 API routes available at http://localhost:${PORT}/api`);
 
 export type App = typeof app;
+export default app;
