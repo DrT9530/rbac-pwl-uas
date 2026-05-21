@@ -26,25 +26,27 @@ const app = new Elysia()
   )
   // Global error handler
   .onError(({ code, error, set }) => {
-    if (error.message === "Authentication required" || error.message === "Invalid or expired token") {
+    const errMessage = error instanceof Error ? error.message : String(error);
+    
+    if (errMessage === "Authentication required" || errMessage === "Invalid or expired token") {
       set.status = 401;
-      return { success: false, message: error.message };
+      return { success: false, message: errMessage };
     }
-    if (error.message === "FORBIDDEN") {
+    if (errMessage === "FORBIDDEN") {
       set.status = 403;
       return { success: false, message: "Access denied" };
     }
-    if (error.message === "COURSE_FORBIDDEN") {
+    if (errMessage === "COURSE_FORBIDDEN") {
       set.status = 403;
       return { success: false, message: "You are not a member of this course" };
     }
-    if (error.message === "COURSE_ROLE_FORBIDDEN") {
+    if (errMessage === "COURSE_ROLE_FORBIDDEN") {
       set.status = 403;
       return { success: false, message: "Insufficient role in this course" };
     }
     if (code === "VALIDATION") {
       set.status = 400;
-      return { success: false, message: "Validation error", errors: error.message };
+      return { success: false, message: "Validation error", errors: errMessage };
     }
     if (code === "NOT_FOUND") {
       set.status = 404;
