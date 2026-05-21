@@ -1,4 +1,21 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Fallback based on current browser URL
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3000/api';
+  }
+  // If we are accessing via local network IP (e.g. 192.168.x.x)
+  if (/^[0-9.]+$/.test(hostname)) {
+    return `http://${hostname}:3000/api`;
+  }
+  // Default fallback for deployment
+  return 'http://localhost:3000/api';
+};
+
+export const API_URL = getApiUrl();
 
 export const GLOBAL_ROLES = [
   { value: 'super_admin', label: 'Super Admin' },
