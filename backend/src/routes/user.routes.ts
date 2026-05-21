@@ -76,7 +76,8 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     try {
       await requireGlobalRole(userId, ["super_admin", "campus_admin"]);
 
-      const { name, email, password, globalRole } = body;
+      const { name, email, password, globalRole, role: roleParam } = body;
+      const targetRole = globalRole || roleParam;
 
       const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
@@ -95,8 +96,8 @@ export const userRoutes = new Elysia({ prefix: "/users" })
       });
 
       // Assign global role if provided
-      if (globalRole) {
-        const role = await prisma.globalRole.findUnique({ where: { name: globalRole } });
+      if (targetRole && targetRole !== "user") {
+        const role = await prisma.globalRole.findUnique({ where: { name: targetRole } });
         if (role) {
           await prisma.userGlobalRole.create({
             data: { userId: newUser.id, globalRoleId: role.id },
@@ -135,6 +136,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
       email: t.String(),
       password: t.String(),
       globalRole: t.Optional(t.String()),
+      role: t.Optional(t.String()),
     }),
   })
   // GET /users/:id — Get user detail (admin only)
@@ -189,7 +191,8 @@ export const userRoutes = new Elysia({ prefix: "/users" })
       await requireGlobalRole(userId, ["super_admin", "campus_admin"]);
 
       const targetId = parseInt(params.id);
-      const { name, email, globalRole } = body;
+      const { name, email, globalRole, role: roleParam } = body;
+      const targetRole = globalRole !== undefined ? globalRole : roleParam;
 
       const existingUser = await prisma.user.findUnique({ where: { id: targetId } });
       if (!existingUser) {
@@ -215,12 +218,12 @@ export const userRoutes = new Elysia({ prefix: "/users" })
       });
 
       // Update global role if provided
-      if (globalRole !== undefined) {
+      if (targetRole !== undefined) {
         // Remove existing global roles
         await prisma.userGlobalRole.deleteMany({ where: { userId: targetId } });
 
-        if (globalRole) {
-          const role = await prisma.globalRole.findUnique({ where: { name: globalRole } });
+        if (targetRole && targetRole !== "user") {
+          const role = await prisma.globalRole.findUnique({ where: { name: targetRole } });
           if (role) {
             await prisma.userGlobalRole.create({
               data: { userId: targetId, globalRoleId: role.id },
@@ -260,6 +263,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
       name: t.Optional(t.String()),
       email: t.Optional(t.String()),
       globalRole: t.Optional(t.Union([t.String(), t.Null()])),
+      role: t.Optional(t.Union([t.String(), t.Null()])),
     }),
   })
   // DELETE /users/:id — Delete user (super_admin only)

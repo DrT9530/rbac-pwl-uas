@@ -110,8 +110,11 @@ export default function UserManagement() {
   };
 
   const handleResetPassword = async (userId) => {
+    const newPassword = prompt('Enter new password:');
+    if (!newPassword) return;
+
     try {
-      await api.post(`/users/${userId}/reset-password`);
+      await api.put(`/users/${userId}/reset-password`, { newPassword });
       showToast('Password reset successfully');
     } catch (err) {
       showToast(err.response?.data?.message || 'Failed to reset password', 'error');
