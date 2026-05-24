@@ -28,7 +28,7 @@ Berikut adalah daftar anggota kelompok pengembang:
 
 Dokumentasi lengkap mengenai rancangan sistem, skema basis data, pengujian, serta analisis keamanan sistem dapat diakses pada tautan berikut:
 
-🔗 **[Baca Laporan Tugas Besar Lengkap di Sini (Google Drive / PDF)] (https://github.com/DrT9530/pwl-rbac-edlink)** *(Silakan sesuaikan tautan ini dengan tautan laporan Anda)*
+🔗 **[Baca Laporan Tugas Besar Lengkap di Sini (https://docs.google.com/document/d/1EFUTuRTgAMVS3WzmtZ-D_12KHHewAlAa42HwbDkB7wM/edit?tab=t.0] ()**
 
 ---
 
